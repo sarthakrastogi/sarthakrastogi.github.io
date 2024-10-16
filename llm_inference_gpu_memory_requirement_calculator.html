@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Memory Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex flex-col justify-between">
+    <div class="flex-grow flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md m-4">
+            <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">LLM Memory Calculator</h1>
+            <form id="memoryForm" class="space-y-4">
+                <div>
+                    <label for="parameters" class="block text-sm font-medium text-gray-700">Number of Parameters
+                        (billions)</label>
+                    <input type="number" id="parameters" name="parameters" step="any" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div>
+                    <label for="bitPrecision" class="block text-sm font-medium text-gray-700">Bit Precision</label>
+                    <select id="bitPrecision" name="bitPrecision" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <option value="32">32-bit (float)</option>
+                        <option value="16">16-bit (half/BF16)</option>
+                        <option value="8">8-bit (int8)</option>
+                        <option value="4">4-bit (int4)</option>
+                    </select>
+                </div>
+                <button type="submit"
+                    class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Calculate
+                </button>
+            </form>
+            <div id="result" class="mt-6 p-4 bg-gray-50 rounded-md hidden">
+                <h2 class="text-lg font-semibold text-gray-800 mb-2">Result:</h2>
+                <p id="memoryRequired" class="text-2xl font-bold text-indigo-600 mb-2"></p>
+                <p id="trainingMemory" class="text-md text-gray-700"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="calculationProcess" class="bg-white p-4 shadow-md hidden">
+        <div class="max-w-2xl mx-auto">
+            <h3 class="text-lg font-semibold mb-2">Calculation Process:</h3>
+            <p class="text-sm text-gray-600 mb-2">1. Identify the bytes per param, based on the bit precision: float (4
+                bytes), half/BF16 (2 bytes), int8
+                (1 byte), or int4 (0.5 bytes).</p>
+            <p class="text-sm text-gray-600 mb-2">2. Calculate storage size: Multiply the number of parameters by the
+                bytes per param.</p>
+            <p class="text-sm text-gray-600 mb-6">3. Training typically needs 3-4x the memory needed for
+                inference.</p>
+            <div class="text-center">
+                <a href="https://training.continuumlabs.ai/infrastructure/data-and-memory/calculating-gpu-memory-for-serving-llms#gpu-memory-required-for-serving-llama-70b"
+                    class="text-sm text-indigo-600 hover:text-indigo-800" target="_blank" rel="noopener noreferrer">
+                    Source
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="aboutmelink" class="bg-white p-4 shadow-md">
+        <div class="max-w-2xl mx-auto">
+            <div class="text-center">
+                <a href="https://www.linkedin.com/in/sarthakrastogi/"
+                    class="text-sm text-indigo-600 hover:text-indigo-800" target="_blank" rel="noopener noreferrer">
+                    About me
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('memoryForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const parameters = parseFloat(document.getElementById('parameters').value) * 1e9;
+            const bitPrecision = parseInt(document.getElementById('bitPrecision').value);
+
+            const bytesPerParameter = bitPrecision / 8;
+            const memoryInBytes = (parameters * bytesPerParameter) * 1.2;
+            const memoryInGB = memoryInBytes / 1e9;
+
+            const resultElement = document.getElementById('result');
+            const memoryRequiredElement = document.getElementById('memoryRequired');
+            const trainingMemoryElement = document.getElementById('trainingMemory');
+            const calculationProcessElement = document.getElementById('calculationProcess');
+
+            resultElement.classList.remove('hidden');
+            memoryRequiredElement.textContent = `Inference Memory: ${memoryInGB.toFixed(2)} GB`;
+            trainingMemoryElement.textContent = `Training Memory: ${(memoryInGB * 3).toFixed(2)} GB to ${(memoryInGB * 4).toFixed(2)} GB`;
+
+            calculationProcessElement.classList.remove('hidden');
+        });
+    </script>
+</body>
+
+</html>
